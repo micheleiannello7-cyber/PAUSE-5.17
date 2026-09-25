@@ -133,7 +133,13 @@ export type UserState = {
   theme_mode?: "light" | "dark" | "system" | null;
   theme_accent?: string | null;
   lang?: "it" | "en" | null;
+  display_name?: string | null;
+  gender?: Gender | null;
+  age?: number | null;
 };
+
+export type Gender = "man" | "woman" | "other";
+export type ProfileInput = { display_name?: string; gender?: Gender; age?: number };
 
 export type Playlist = { minutes: number; total_min: number; stories: StoryPreview[] };
 
@@ -269,6 +275,8 @@ export const api = {
     req<UserState>(`/user/limit-setting`, { method: "POST", body: JSON.stringify({ user_id, enabled }) }),
   setPreferences: (user_id: string, prefs: { theme_mode?: string; theme_accent?: string; lang?: string }) =>
     req<UserState>(`/user/preferences`, { method: "POST", body: JSON.stringify({ user_id, ...prefs }) }),
+  setProfile: (user_id: string, profile: ProfileInput) =>
+    req<UserState>(`/user/profile`, { method: "POST", body: JSON.stringify({ user_id, ...profile }) }),
   toggleBookmark: (user_id: string, story_id: string) =>
     req<UserState>(`/user/bookmark`, { method: "POST", body: JSON.stringify({ user_id, story_id }) }),
   toggleLike: (user_id: string, story_id: string) =>

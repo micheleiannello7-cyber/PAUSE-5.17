@@ -237,6 +237,16 @@ class UserState(BaseModel):
     # Which content kinds the user wants in the feed: "stories" (curiosità)
     # and/or "lessons" (mini lezioni). Both by default.
     content_modes: List[str] = Field(default_factory=lambda: ["stories", "lessons"])
+    # Onboarding "Raccontaci qualcosa di te": optional, None = never provided.
+    display_name: Optional[str] = None
+    gender: Optional[str] = None  # "man" | "woman" | "other"
+    age: Optional[int] = None
+
+class ProfileUpdate(BaseModel):
+    user_id: str
+    display_name: Optional[str] = None
+    gender: Optional[str] = None
+    age: Optional[int] = None
 
 class ContentModesUpdate(BaseModel):
     user_id: str
@@ -1031,6 +1041,30 @@ async def set_preferences(payload: PreferencesUpdate):
         update["theme_accent"] = payload.theme_accent
     if payload.lang in ("it", "en"):
         update["lang"] = payload.lang
+    await _get_or_create_state(payload.user_id)
+    if update:
+        await db.user_state.update_one({"user_id": payload.user_id}, {"$set": update})
+    doc = await db.user_state.find_one({"user_id": payload.user_id}, {"_id": 0})
+    return UserState(**doc)
+
+@api_router.post("/user/profile", response_model=UserState)
+async def set_profile(payload: ProfileUpdate):
+    """Persist the onboarding profile (name/nickname, gender, age). Additive:
+    only valid, provided fields are written; nothing else on the state changes."""
+    update: dict = {}
+    if payload.display_name is not None:
+        name = payload.display_name.strip()
+        if not (1 <= len(name) <= 40):
+            raise HTTPException(422, "display_name must be 1-40 characters")
+        update["display_name"] = name
+    if payload.gender is not None:
+        if payload.gender not in ("man", "woman", "other"):
+            raise HTTPException(422, "invalid gender")
+        update["gender"] = payload.gender
+    if payload.age is not None:
+        if not (13 <= payload.age <= 120):
+            raise HTTPException(422, "age must be between 13 and 120")
+        update["age"] = payload.age
     await _get_or_create_state(payload.user_id)
     if update:
         await db.user_state.update_one({"user_id": payload.user_id}, {"$set": update})
