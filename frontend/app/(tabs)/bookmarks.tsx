@@ -237,6 +237,11 @@ function SavedCard({ story, userId, onPress }: { story: StoryPreview; userId: st
           <Ionicons name="time-outline" size={11} color={colors.muted} />
           <Text style={styles.metaText}>{story.reading_time_min} {t.min}</Text>
           <KindBadge story={story} size="sm" />
+          {story.is_new ? (
+            <View style={[styles.newPill, { borderColor: colors.brand }]} testID={`bookmark-${story.id}-new`}>
+              <Text style={[styles.newPillText, { color: colors.brand }]}>{t.new_badge}</Text>
+            </View>
+          ) : null}
         </View>
       </View>
       <Pressable onPress={() => toggle("bookmark")} hitSlop={8} style={styles.removeBtn} testID={`unsave-${story.id}`} accessibilityLabel={t.saved_remove}>
@@ -287,6 +292,8 @@ const styles = StyleSheet.create({
   cardTitle: { color: colors.onSurface, fontFamily: typography.displayBold, fontSize: 14, lineHeight: 18 },
   metaRow: { flexDirection: "row", alignItems: "center", gap: 6 },
   metaText: { color: colors.muted, fontFamily: typography.body, fontSize: 11, marginRight: 4 },
+  newPill: { paddingHorizontal: 6, paddingVertical: 2, borderRadius: radius.pill, borderWidth: 1, marginLeft: 6 },
+  newPillText: { fontFamily: typography.bodyBold, fontSize: 8, letterSpacing: 1 },
   removeBtn: {
     width: 36, height: 36, borderRadius: 18, alignItems: "center", justifyContent: "center",
     backgroundColor: colors.brand + "14", borderWidth: 1, borderColor: colors.brand + "44",

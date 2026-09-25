@@ -243,7 +243,7 @@ function StoryRow({
         <KindBadge story={story} size="sm" overlay />
         {story.is_new ? (
           <View style={[styles.newPill, { backgroundColor: colors.overlay, borderColor: colors.brand }]}>
-            <Text style={[styles.newPillText, { color: colors.brand }]}>NUOVA</Text>
+            <Text style={[styles.newPillText, { color: colors.brand }]}>{t.new_badge}</Text>
           </View>
         ) : null}
         <View style={{ flex: 1 }} />

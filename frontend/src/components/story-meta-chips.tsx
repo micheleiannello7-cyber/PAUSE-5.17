@@ -32,6 +32,14 @@ export function StoryMetaChips({
   return (
     <View style={[styles.row, style]} testID={`${idPrefix}-meta`}>
       <View style={styles.chips}>
+        {story.is_new ? (
+          <>
+            <View testID={`${idPrefix}-new`} style={styles.newSeg}>
+              <Text testID={`${idPrefix}-new-label`} style={styles.newText}>{t.new_badge}</Text>
+            </View>
+            <View style={styles.divider} />
+          </>
+        ) : null}
         <View testID={`${idPrefix}-kind`} style={styles.kind}>
           <KindIcon kind={kind} size={18} glow={false} testID={`${idPrefix}-kind-icon`} />
           <Text testID={`${idPrefix}-kind-label`} style={styles.kindText} numberOfLines={1}>{kindLabel}</Text>
@@ -56,6 +64,8 @@ const useStyles = makeStyles((colors) => ({
   row: { flexDirection: "row", justifyContent: "center", alignItems: "center" },
   chips: { flexShrink: 1, maxWidth: "100%", flexDirection: "row", alignItems: "center", borderRadius: 30, borderWidth: 1, borderColor: colors.glassBorderStrong, backgroundColor: colors.scrim, overflow: "hidden" },
   kind: { flexDirection: "row", alignItems: "center", gap: 4, paddingLeft: 4, paddingRight: 8, minHeight: 26, backgroundColor: colors.cyanGlowSoft, borderRadius: 30 },
+  newSeg: { paddingHorizontal: 9, minHeight: 26, justifyContent: "center", backgroundColor: colors.brand, borderRadius: 30 },
+  newText: { fontFamily: typography.bodyBold, fontSize: 8, letterSpacing: 1, color: colors.onGradient },
   kindText: { fontFamily: typography.bodyBold, fontSize: 8, letterSpacing: 0.6, color: colors.onGradient, flexShrink: 1 },
   divider: { height: 10, width: 1, backgroundColor: colors.glassBorderStrong },
   category: { flexShrink: 1, minWidth: 0, flexDirection: "row", alignItems: "center", gap: 5, paddingHorizontal: 7 },

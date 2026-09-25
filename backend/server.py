@@ -466,6 +466,9 @@ FREE_SAVED_LIMIT = 20
 # New stories are Premium-exclusive for this many days after their release
 # (early access). Free users see them once the window closes.
 EARLY_ACCESS_DAYS = 7
+# The "Nuova" badge stays on for longer than early access, so free readers
+# also discover a story as new once it opens up to them.
+NEW_BADGE_DAYS = 21
 
 
 def _early_filter(state: Optional[dict]) -> dict:
@@ -484,7 +487,7 @@ def _is_new(doc: dict) -> bool:
     # Normalize: Mongo stores naive UTC; make it aware for the delta.
     if created.tzinfo is None:
         created = created.replace(tzinfo=timezone.utc)
-    return (datetime.now(timezone.utc) - created) < timedelta(days=EARLY_ACCESS_DAYS)
+    return (datetime.now(timezone.utc) - created) < timedelta(days=NEW_BADGE_DAYS)
 
 
 def _limits_for(state: dict) -> tuple[int, int]:
