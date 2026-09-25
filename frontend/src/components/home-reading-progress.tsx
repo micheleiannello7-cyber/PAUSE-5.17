@@ -15,8 +15,8 @@ export function HomeReadingProgress({ count }: { count: number }) {
   const { colors } = useTheme();
   const styles = useStyles();
   const router = useRouter();
-  // A reading milestone, not a session limit. Grows only after completing 20.
-  const goal = Math.max(20, Math.ceil(count / 20) * 20);
+  // A reading milestone, not a session limit: always the next multiple of 20.
+  const goal = (Math.floor(count / 20) + 1) * 20;
   const label = count === 0 ? t.home_read_count_zero : count === 1 ? t.home_read_count_one : t.home_read_count.replace("{count}", String(count));
   const caption = count === 0 ? t.home_read_caption_zero : t.home_read_caption;
   return (

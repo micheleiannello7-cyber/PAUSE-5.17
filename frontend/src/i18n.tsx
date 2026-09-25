@@ -178,8 +178,14 @@ const it = {
   load_error_sub: "Controlla la connessione e riprova.",
   retry: "Riprova",
   // resume reading
-  resume_eyebrow: "RIPRENDI LA LETTURA",
+  resume_eyebrow: "RIPRENDI DA DOVE ERI",
   resume_hint: "Continua da dove eri rimasto",
+  resume_left: "Sei al {pct}%",
+  milestone_eyebrow: "TRAGUARDO RAGGIUNTO",
+  milestone_read: "Hai letto {count} storie.",
+  milestone_next: "Prossimo traguardo: {next}.",
+  milestone_continue: "Continua a scoprire",
+  milestone_stats: "Vedi le tue statistiche",
   swipe_hint: "Scorri o usa le frecce",
   // mini guida (primi 3 avvii)
   tip_home: "Scorri la card a sinistra per la prossima curiosità, toccala per aprirla.",
@@ -407,6 +413,12 @@ const en: typeof it = {
   retry: "Retry",
   resume_eyebrow: "PICK UP WHERE YOU LEFT OFF",
   resume_hint: "Continue where you left off",
+  resume_left: "You're at {pct}%",
+  milestone_eyebrow: "MILESTONE REACHED",
+  milestone_read: "You've read {count} stories.",
+  milestone_next: "Next milestone: {next}.",
+  milestone_continue: "Keep discovering",
+  milestone_stats: "See your statistics",
   swipe_hint: "Swipe or use the arrows",
   // mini guide (first 3 launches)
   tip_home: "Swipe the card left for the next curiosity, tap it to open.",

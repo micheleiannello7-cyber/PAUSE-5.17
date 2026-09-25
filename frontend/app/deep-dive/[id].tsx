@@ -224,11 +224,12 @@ export default function DeepDive() {
   }, [userId, id, !!story]);
 
   // Mark as completed once: when the reader reaches the end (or taps "next").
+  // Nota: "completata" qui vale per limiti e statistiche (scatta dopo 5 s di
+  // permanenza); il segnalibro "riprendi" resta finché non si arriva in fondo.
   const markComplete = useCallback(async () => {
     if (!userId || !id || completedRef.current === id) return;
     completedRef.current = id;
     try {
-      await clearReadingProgress(userId);
       const secs = Math.round((Date.now() - startedAtRef.current) / 1000);
       await api.complete(userId, id, story?.deep_dive_time_min ?? 2, secs);
       qc.invalidateQueries({ queryKey: ["user"] });
@@ -254,11 +255,12 @@ export default function DeepDive() {
     if (!story) return;
     const ratio = lastSection > 0 ? section / lastSection : 0;
     if (section >= lastSection) {
+      if (userId) clearReadingProgress(userId);
       markComplete();
       return;
     }
     // Remember genuine mid-read positions only (skip the intro).
-    if (userId && section > 0 && touchedRef.current && completedRef.current !== id) {
+    if (userId && section > 0 && touchedRef.current) {
       saveReadingProgress(userId, { story: toStoryPreview(story), page: section, progress: ratio, updatedAt: Date.now() });
     }
   }, [section, story, lastSection, userId, id, markComplete]);

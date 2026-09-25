@@ -65,3 +65,9 @@ Mobile Expo app (React Native + FastAPI + MongoDB) that turns idle moments into 
 
 ## Home — barra "storie lette" ridisegnata
 - `home-reading-progress.tsx`: stessa grammatica delle tessere categoria (vetro dark-navy ONB, bordo chiaro, riga luminosa, oggetto 3D "libri"), barra di avanzamento cyan→viola, contatore "n / 20", chevron → statistiche. Allineata ai bordi della griglia (`gridPadding`). Testi a 0 letture: "La tua prima storia ti aspetta / Apri una card qui sopra per iniziare" (i18n `home_read_count_zero`, `home_read_caption_zero`).
+
+## Home — "Riprendi da dove eri" + traguardi di lettura
+- **Bug fix lettore** (`app/deep-dive/[id].tsx`): il segnalibro di lettura veniva cancellato dopo 5 s (quando la storia viene "consumata" per i limiti) → la card "riprendi" non compariva mai. Ora il progresso si salva a ogni pagina e si cancella solo arrivando in fondo.
+- `src/components/resume-card.tsx`: card in vetro sotto il mazzo Home (copertina, pillola %, barra cyan→viola, tasto play), allineata alla griglia; `showResume` non esclude più le storie "consumate".
+- Traguardi 20/40/60…: `src/milestones.ts` (memoria `pause.milestone.<uid>`, nessun festeggiamento retroattivo al primo avvio) + `src/components/milestone-celebration.tsx` (modal vetro, medaglia animata con numero, coriandoli reanimated, haptic Success, livelli: 20 Lettore curioso, 40 Esploratore di idee, 60 Mente aperta, 80 Collezionista di storie, 100 Centurione, oltre Maestro della pausa; CTA "Continua a scoprire" + link statistiche). Barra Home: obiettivo sempre il prossimo multiplo di 20.
+- Testato E2E (iteration_3): resume, fine lettura, celebrazione una sola volta, barra 20/40.

@@ -1,23 +1,23 @@
 import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { View, Text, Pressable, ActivityIndicator, ScrollView, useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { LinearGradient } from "expo-linear-gradient";
 import { useRouter, useFocusEffect } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
 import Ionicons from "@react-native-vector-icons/ionicons";
 import * as Haptics from "expo-haptics";
 import { Image } from "expo-image";
 import { api, StoryPreview, hasHero, heroUrl } from "@/src/api";
-import { makeStyles, useTheme, spacing, radius, typography } from "@/src/theme";
+import { makeStyles, useTheme, spacing, typography } from "@/src/theme";
 import { useUserId } from "@/src/session";
 import { getReadingProgress, ReadingProgress } from "@/src/reading-progress";
 import { PauseLogo } from "@/src/components/pause-logo";
 import { GradientButton } from "@/src/components/gradient-button";
-import { StoryHero } from "@/src/components/story-hero";
-import { GlassSurface } from "@/src/components/glass";
 import { HomeCategoryTile } from "@/src/components/home-controls";
 import { HomeStoryDeck } from "@/src/components/home-story-deck";
 import { HomeReadingProgress } from "@/src/components/home-reading-progress";
+import { ResumeCard } from "@/src/components/resume-card";
+import { MilestoneCelebration } from "@/src/components/milestone-celebration";
+import { useReadingMilestone } from "@/src/milestones";
 import { useI18n } from "@/src/i18n";
 
 const DECK_BATCH = 7;
@@ -66,7 +66,9 @@ export default function Discover() {
     if (!userId) return;
     getReadingProgress(userId).then(setResume);
   }, [userId]));
-  const showResume = !!resume && resume.progress < 0.95 && !userState?.completed_story_ids?.includes(resume.story.id);
+  const showResume = !!resume && resume.progress < 0.95;
+  const completedCount = userState?.completed_story_ids.length;
+  const { milestone, dismiss: dismissMilestone } = useReadingMilestone(userId, completedCount);
 
   // Il mazzo è una linea temporale: la card aperta è la prima, le successive
   // stanno a destra e a sinistra restano SOLO quelle già fatte scorrere.
@@ -168,6 +170,11 @@ export default function Discover() {
         ) : (
           <View testID="discover-loading" style={[styles.loading, { height: cardHeight + 26 }]}><ActivityIndicator color={colors.brand} /></View>
         )}
+        {showResume && resume ? (
+          <View style={[styles.resumeSection, { marginHorizontal: gridPadding }]}>
+            <ResumeCard progress={resume} onPress={() => router.push(`/deep-dive/${resume.story.id}`)} />
+          </View>
+        ) : null}
         {tileCats.length ? (
           <View style={[styles.catsSection, { paddingHorizontal: gridPadding }]} testID="home-categories">
             <View style={styles.catsHead}>
@@ -188,41 +195,10 @@ export default function Discover() {
         <View style={[styles.progressSection, { marginHorizontal: gridPadding }]}>
           <HomeReadingProgress count={userState?.completed_story_ids.length ?? 0} />
         </View>
-        {showResume && resume ? <View style={styles.resumeSection}><ResumeCard progress={resume} onPress={() => router.push(`/deep-dive/${resume.story.id}`)} /></View> : null}
         </View>
       </ScrollView>
+      <MilestoneCelebration milestone={milestone} onClose={dismissMilestone} onStats={() => { dismissMilestone(); router.push("/stats"); }} />
     </View>
-  );
-}
-
-function ResumeCard({ progress, onPress }: { progress: ReadingProgress; onPress: () => void }) {
-  const { t } = useI18n();
-  const styles = useStyles();
-  const { colors } = useTheme();
-  const pct = Math.round(progress.progress * 100);
-  return (
-    <Pressable onPress={onPress} testID="resume-reading-card" accessibilityRole="button" style={({ pressed }) => [styles.resumeWrap, pressed && styles.pressed]}>
-      <GlassSurface intensity="strong" glow glowColor={colors.cyanGlow} radiusOverride={radius.lg}>
-        <View style={styles.resumeInner}>
-          <View style={styles.resumeThumbWrap}>
-            <StoryHero story={progress.story} style={styles.resumeThumb} iconSize={26} size="thumb" />
-            <View style={styles.resumeThumbGlow} />
-          </View>
-          <View style={styles.resumeInfo}>
-            <View style={styles.resumeEyebrowRow}>
-              <Ionicons name="book" size={11} color={colors.cyan} />
-              <Text testID="resume-reading-label" style={styles.resumeEyebrow}>{t.resume_eyebrow}</Text>
-              <View style={styles.resumePctPill}><Text testID="resume-reading-progress" style={styles.resumePctText}>{pct}%</Text></View>
-            </View>
-            <Text testID="resume-reading-title" style={styles.resumeTitle} numberOfLines={1}>{progress.story.title}</Text>
-            <View style={styles.resumeTrack}>
-              <LinearGradient colors={[colors.cyan, colors.cyanSoft]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={[styles.resumeFill, { width: `${Math.max(pct, 4)}%` }]} />
-            </View>
-          </View>
-          <View style={styles.resumePlayWrap}><Ionicons name="play" size={16} color={colors.cyan} /></View>
-        </View>
-      </GlassSurface>
-    </Pressable>
   );
 }
 
@@ -239,23 +215,9 @@ const useStyles = makeStyles((colors) => ({
   seeAllText: { color: colors.onSurfaceTertiary, fontFamily: typography.bodyMedium, fontSize: 10 },
   catsGrid: { flexDirection: "row", flexWrap: "wrap", rowGap: 12 },
   progressSection: { marginTop: "auto", paddingTop: 20 },
-  resumeSection: { marginHorizontal: spacing.xl, marginTop: 18 },
+  resumeSection: { marginTop: 14 },
   loading: { alignItems: "center", justifyContent: "center" },
-  resumeWrap: { marginBottom: spacing.lg },
   pressed: { opacity: 0.92 },
-  resumeInner: { flexDirection: "row", alignItems: "center", gap: spacing.md, padding: spacing.sm, paddingRight: spacing.md },
-  resumeThumbWrap: { position: "relative" },
-  resumeThumb: { width: 58, height: 58, borderRadius: radius.md, overflow: "hidden" },
-  resumeThumbGlow: { position: "absolute", top: -1, left: -1, right: -1, bottom: -1, borderRadius: radius.md + 1, borderWidth: 1, borderColor: colors.cyan + "55" },
-  resumeInfo: { flex: 1, gap: 6 },
-  resumeEyebrowRow: { flexDirection: "row", alignItems: "center", gap: 6 },
-  resumeEyebrow: { color: colors.cyan, fontFamily: typography.bodyBold, fontSize: 9, letterSpacing: 1.5 },
-  resumePctPill: { marginLeft: "auto", paddingHorizontal: 8, height: 18, borderRadius: 9, alignItems: "center", justifyContent: "center", backgroundColor: colors.cyanGlowSoft, borderWidth: 1, borderColor: colors.cyan + "40" },
-  resumePctText: { color: colors.cyan, fontFamily: typography.bodyBold, fontSize: 10 },
-  resumeTitle: { color: colors.onSurface, fontFamily: typography.bodyBold, fontSize: 14, lineHeight: 18 },
-  resumeTrack: { height: 4, borderRadius: 2, backgroundColor: colors.track, overflow: "hidden" },
-  resumeFill: { height: "100%", borderRadius: 2 },
-  resumePlayWrap: { width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center", backgroundColor: colors.cyanGlowSoft, borderWidth: 1, borderColor: colors.cyan + "55", marginLeft: spacing.xs },
   empty: { flex: 1, alignItems: "center", justifyContent: "center", paddingVertical: 48, gap: spacing.md },
   emptyTitle: { color: colors.onSurface, fontFamily: typography.displayBold, fontSize: 18 },
   emptyText: { color: colors.muted, fontFamily: typography.body, fontSize: 14, textAlign: "center", lineHeight: 20, paddingHorizontal: spacing.lg },
