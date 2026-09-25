@@ -50,7 +50,7 @@ const it = {
   start_lesson: "Inizia la lezione", objective_label: "COSA IMPARERAI",
   // home
   your_categories: "Le tue categorie", see_all: "Vedi tutte", your_rhythm: "IL TUO RITMO",
-  home_read_count: "Hai già letto {count} storie", home_read_count_one: "Hai già letto 1 storia", home_read_caption: "Ogni scoperta conta.", read_lesson: "Leggi la mini-lezione",
+  home_read_count: "Hai già letto {count} storie", home_read_count_one: "Hai già letto 1 storia", home_read_count_zero: "La tua prima storia ti aspetta", home_read_caption: "Ogni scoperta conta.", home_read_caption_zero: "Apri una card qui sopra per iniziare.", read_lesson: "Leggi la mini-lezione",
   read_story: "Leggi la curiosità", another_story: "Mostrami un'altra curiosità",
   preview_release_hint: "Rilascia, poi tocca per leggere", explore_hint: "Da scoprire",
   explored_all: "Hai esplorato tutto per oggi",
@@ -287,7 +287,7 @@ const en: typeof it = {
   lesson_badge: "MINI LESSON", curiosity_badge: "CURIOSITY", steps: "steps",
   start_lesson: "Start the lesson", objective_label: "WHAT YOU'LL LEARN",
   your_categories: "Your categories", see_all: "See all", your_rhythm: "YOUR RHYTHM",
-  home_read_count: "You've read {count} stories", home_read_count_one: "You've read 1 story", home_read_caption: "Every discovery counts.", read_lesson: "Read the mini lesson",
+  home_read_count: "You've read {count} stories", home_read_count_one: "You've read 1 story", home_read_count_zero: "Your first story is waiting", home_read_caption: "Every discovery counts.", home_read_caption_zero: "Open a card above to begin.", read_lesson: "Read the mini lesson",
   read_story: "Read the story", another_story: "Show me another one",
   preview_release_hint: "Release, then tap to read", explore_hint: "Discover",
   explored_all: "You've explored everything for today",

@@ -185,7 +185,7 @@ export default function Discover() {
             </View>
           </View>
         ) : null}
-        <View style={styles.progressSection}>
+        <View style={[styles.progressSection, { marginHorizontal: gridPadding }]}>
           <HomeReadingProgress count={userState?.completed_story_ids.length ?? 0} />
         </View>
         {showResume && resume ? <View style={styles.resumeSection}><ResumeCard progress={resume} onPress={() => router.push(`/deep-dive/${resume.story.id}`)} /></View> : null}
@@ -238,7 +238,7 @@ const useStyles = makeStyles((colors) => ({
   seeAll: { minHeight: 44, flexDirection: "row", alignItems: "center", gap: 3 },
   seeAllText: { color: colors.onSurfaceTertiary, fontFamily: typography.bodyMedium, fontSize: 10 },
   catsGrid: { flexDirection: "row", flexWrap: "wrap", rowGap: 12 },
-  progressSection: { marginHorizontal: "5.4%", marginTop: "auto", paddingTop: 20 },
+  progressSection: { marginTop: "auto", paddingTop: 20 },
   resumeSection: { marginHorizontal: spacing.xl, marginTop: 18 },
   loading: { alignItems: "center", justifyContent: "center" },
   resumeWrap: { marginBottom: spacing.lg },
