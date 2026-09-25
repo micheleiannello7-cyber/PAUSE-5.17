@@ -29,30 +29,35 @@ FALLBACK_HERO = {
     "geografia": _U.format("photo-1476514525535-07fb3b4ae5f1"),
 }
 
-STORIES = []
-LESSONS = []
+def build_pack(content: dict):
+    """Costruisce (STORIES, LESSONS) da un JSON {id: {it, en, kind, category_id, icons}}.
+    Usato anche da seed_pack_v9.py (stessa gerarchia)."""
+    stories, lessons = [], []
+    for _sid, _e in content.items():
+        _it, _en, _cat = _e["it"], _e["en"], _e["category_id"]
+        _chapters = [(c["title"], c["body"]) for c in _it["chapters"]]
+        if _e["kind"] == "lesson":
+            _doc = mk_lesson(
+                _cat, _sid, _it["title"], _it.get("highlight_words", [])[:3], _it["hook"],
+                _it.get("objective", ""), _it["summary"], _chapters,
+            )
+        else:
+            _doc = mk(_cat, _sid, _it["title"], _it.get("highlight_words", [])[:3], _it["hook"], _it["summary"],
+                      FALLBACK_HERO[_cat], _chapters)
+        # Icone scelte dal modello quando valide, altrimenti il pool di categoria.
+        _pool = ICON_POOL[_cat]
+        for _i, _ch in enumerate(_doc["chapters"]):
+            _icon = (_e.get("icons") or [None] * 6)[_i] if _i < len(_e.get("icons") or []) else None
+            _ch["icon"] = _icon or _pool[_i % len(_pool)]
+        _tr = en_entry(_en["title"], _en.get("highlight_words", [])[:3], _en["hook"], _en["summary"],
+                       [(c["title"], c["body"]) for c in _en["chapters"]])
+        if _e["kind"] == "lesson":
+            _tr["objective"] = _en.get("objective", "")
+        _doc["translations"] = {"en": _tr}
+        _doc["chapters_v6"] = True
+        _doc["ai_generated"] = True
+        (lessons if _e["kind"] == "lesson" else stories).append(_doc)
+    return stories, lessons
 
-for _sid, _e in _CONTENT.items():
-    _it, _en, _cat = _e["it"], _e["en"], _e["category_id"]
-    _chapters = [(c["title"], c["body"]) for c in _it["chapters"]]
-    if _e["kind"] == "lesson":
-        _doc = mk_lesson(
-            _cat, _sid, _it["title"], _it.get("highlight_words", [])[:3], _it["hook"],
-            _it.get("objective", ""), _it["summary"], _chapters,
-        )
-    else:
-        _doc = mk(_cat, _sid, _it["title"], _it.get("highlight_words", [])[:3], _it["hook"], _it["summary"],
-                  FALLBACK_HERO[_cat], _chapters)
-    # Icone scelte dal modello quando valide, altrimenti il pool di categoria.
-    _pool = ICON_POOL[_cat]
-    for _i, _ch in enumerate(_doc["chapters"]):
-        _icon = (_e.get("icons") or [None] * 6)[_i] if _i < len(_e.get("icons") or []) else None
-        _ch["icon"] = _icon or _pool[_i % len(_pool)]
-    _tr = en_entry(_en["title"], _en.get("highlight_words", [])[:3], _en["hook"], _en["summary"],
-                   [(c["title"], c["body"]) for c in _en["chapters"]])
-    if _e["kind"] == "lesson":
-        _tr["objective"] = _en.get("objective", "")
-    _doc["translations"] = {"en": _tr}
-    _doc["chapters_v6"] = True
-    _doc["ai_generated"] = True
-    (LESSONS if _e["kind"] == "lesson" else STORIES).append(_doc)
+
+STORIES, LESSONS = build_pack(_CONTENT)

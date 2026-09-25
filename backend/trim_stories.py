@@ -33,17 +33,21 @@ from emergentintegrations.llm.chat import LlmChat, UserMessage  # noqa: E402
 from server import _estimated_audio_minutes, _localize, _clean_for_estimate  # noqa: E402
 
 MODEL = ("openai", "gpt-5.4")  # same editor model used to generate the catalogue
-MAX_MINUTES = 4
-# 4 min = 240 s at 12.5 chars/s minus chapter/intro pauses (~10.5 s) ≈ 2870 chars.
-# Aim lower so the ceil() estimate lands safely at ≤ 4 min.
-TARGET_CHARS = 2600
-HARD_LIMIT_CHARS = 2850
+# Regola editoriale: curiosità e mini lezioni tra 3 e 5 minuti (badge = stima TTS, ceil).
+MAX_MINUTES = 5
+# 5 min = 300 s at 12.5 chars/s minus chapter/intro pauses (~10.5 s) ≈ 3620 chars.
+# Aim lower so the ceil() estimate lands safely at ≤ 5 min.
+TARGET_CHARS = 3200
+HARD_LIMIT_CHARS = 3550
 CONCURRENCY = 4
 BACKUP = "stories_backup_pre_trim"
+# Sorgenti seed in JSON: il testo accorciato viene riscritto anche lì, così un
+# nuovo ambiente (fork/deploy) riparte già con la versione corta.
+SOURCE_JSONS = [ROOT / "v8_content.json", ROOT / "v9_content.json"]
 
 SYSTEM = (
     "You are the senior editor of PAUSE, a premium micro-learning app. You tighten existing explainers "
-    "so they read in under four minutes, without changing what they say. You never add facts, never "
+    "so they read in under five minutes, without changing what they say. You never add facts, never "
     "remove a key idea, never change the language, tone or point of view, and you keep the prose vivid "
     "and precise. You answer with valid JSON only, no markdown fences, no commentary."
 )
@@ -186,7 +190,27 @@ async def process(db, doc: dict, lang: str, dry_run: bool, sem: asyncio.Semaphor
     }
     fields["chapters_v6"] = True
     await db.stories.update_one({"id": sid}, {"$set": fields})
+    sync_source_json(sid, lang, trimmed)
     return sid, lang, f"trimmed {before_min}→{after_min} min ({before_chars}→{after_chars} chars)"
+
+
+def sync_source_json(sid: str, lang: str, trimmed: dict) -> None:
+    """Riscrive hook/summary/body accorciati nel JSON seed che contiene la storia (se esiste)."""
+    for path in SOURCE_JSONS:
+        if not path.exists():
+            continue
+        data = json.loads(path.read_text())
+        entry = data.get(sid)
+        if not entry or lang not in entry:
+            continue
+        block = entry[lang]
+        block["hook"], block["summary"] = trimmed["hook"], trimmed["summary"]
+        for ch, t in zip(block["chapters"], trimmed["chapters"]):
+            ch["body"] = t["body"]
+        tmp = path.with_suffix(".tmp")
+        tmp.write_text(json.dumps(data, ensure_ascii=False, indent=1))
+        tmp.replace(path)
+        return
 
 
 async def restore(db, story_id: str) -> None:

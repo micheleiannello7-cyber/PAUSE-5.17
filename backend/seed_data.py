@@ -628,7 +628,7 @@ for _mod in ("seed_pack_v4_a", "seed_pack_v4_b", "seed_pack_v4_c"):
         print(f"{_mod} not loaded: {_e}")
 
 # Pack v5: storie + lezioni bilingue (ora integrati al seed, "attivala tutta").
-for _mod in ("seed_pack_v5_a", "seed_pack_v5_b", "seed_pack_v5_c", "seed_pack_v5_d", "seed_pack_v5_e", "seed_pack_v7_arte_geo", "seed_pack_v8"):
+for _mod in ("seed_pack_v5_a", "seed_pack_v5_b", "seed_pack_v5_c", "seed_pack_v5_d", "seed_pack_v5_e", "seed_pack_v7_arte_geo", "seed_pack_v8", "seed_pack_v9"):
     try:
         _m = __import__(_mod)
         STORIES.extend(getattr(_m, "STORIES", []))

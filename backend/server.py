@@ -293,7 +293,9 @@ except Exception:
     LESSONS_B = []
 # Former "mini lessons" are now regular stories: one single content format.
 LESSONS = list(LESSONS_A) + list(LESSONS_B)
-ALL_STORIES = list(STORIES) + LESSONS
+# Contenuti ritirati dal controllo qualità (doppioni / deboli): mai più seminati.
+from retired_stories import RETIRED_IDS, retire_in_db
+ALL_STORIES = [s for s in list(STORIES) + LESSONS if s["id"] not in RETIRED_IDS]
 from category_taxonomy import apply_seed_taxonomy, migrate_curiosita, normalize_category_ids, REASSIGNMENTS
 apply_seed_taxonomy(CATEGORIES, ALL_STORIES)
 
@@ -338,6 +340,9 @@ async def ensure_seed():
                     payload[k] = existing[k]
         await db.stories.update_one({"id": s["id"]}, {"$set": payload}, upsert=True)
     await db.stories.update_many({"kind": {"$exists": False}}, {"$set": {"kind": "story"}})
+    retired = await retire_in_db(db)
+    if retired:
+        logger.info("Retired %s stories into stories_retired", retired)
 
     # Early-access migration: backdate every story to > EARLY_ACCESS_DAYS ago
     # and re-flag the last 10 (by seed order) as "new" today. Idempotent —

@@ -15,6 +15,10 @@ from pymongo import MongoClient
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from category_taxonomy import MIGRATION_ID, REASSIGNMENTS, apply_seed_taxonomy, migrate_curiosita
+from retired_stories import RETIRED_IDS
+
+# Legacy ids still in the catalogue (4 were retired as duplicates/weak content, see retired_stories.py).
+ACTIVE_REASSIGNED = {k: v for k, v in REASSIGNMENTS.items() if k not in RETIRED_IDS}
 
 
 _BACKEND_ENV = Path(__file__).resolve().parents[1] / ".env"
@@ -132,7 +136,7 @@ class TestCuriositaPublicApi:
         assert response.status_code == 200
         stories = response.json()
         ids = {s["id"] for s in stories}
-        assert ids == set(REASSIGNMENTS.keys())
+        assert ids == set(ACTIVE_REASSIGNED.keys())
         assert all(s["category_id"] != "curiosita" for s in stories)
 
     def test_interests_curiosita_normalized_and_discover_works(self, session: requests.Session):
@@ -153,7 +157,7 @@ class TestCuriositaPublicApi:
 
     def test_moved_story_detail_related_bookmark_and_stats(self, session: requests.Session):
         user_id = f"TEST_iter25_{uuid.uuid4()}"
-        story_id = "cur-why-yawn-contagious-fun"
+        story_id = "cur-why-mirrors-reverse"
 
         detail = session.get(f"{BASE_URL}/api/stories/{story_id}", timeout=30)
         assert detail.status_code == 200
@@ -184,15 +188,15 @@ class TestCuriositaBackupAndDataIntegrity:
     def test_total_docs_and_reassignment_distribution(self, mongo_db):
         assert mongo_db.categories.count_documents({}) == 12
         assert mongo_db.categories.count_documents({"id": "curiosita"}) == 0
-        assert mongo_db.stories.count_documents({}) == 437
+        assert mongo_db.stories.count_documents({}) == 419  # 437 - 18 retired
 
-        moved_docs = list(mongo_db.stories.find({"id": {"$in": list(REASSIGNMENTS.keys())}}, {"_id": 0}))
-        assert len(moved_docs) == 28
+        moved_docs = list(mongo_db.stories.find({"id": {"$in": list(ACTIVE_REASSIGNED.keys())}}, {"_id": 0}))
+        assert len(moved_docs) == 24
         by_kind = {"story": 0, "lesson": 0}
         for doc in moved_docs:
             by_kind[doc.get("kind", "story")] = by_kind.get(doc.get("kind", "story"), 0) + 1
             assert doc["category_id"] == REASSIGNMENTS[doc["id"]]
-        assert by_kind["story"] == 18
+        assert by_kind["story"] == 14
         assert by_kind["lesson"] == 10
 
     def test_taxonomy_backup_story_docs_preserve_core_fields(self, mongo_db):
