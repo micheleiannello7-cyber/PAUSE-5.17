@@ -178,7 +178,7 @@ const it = {
   load_error_sub: "Controlla la connessione e riprova.",
   retry: "Riprova",
   // resume reading
-  resume_eyebrow: "RIPRENDI DA DOVE ERI",
+  resume_eyebrow: "RIPRENDI DA DOVE ERI RIMASTO",
   resume_hint: "Continua da dove eri rimasto",
   resume_left: "Sei al {pct}%",
   milestone_eyebrow: "TRAGUARDO RAGGIUNTO",
